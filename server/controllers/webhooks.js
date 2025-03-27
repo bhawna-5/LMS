@@ -11,29 +11,35 @@ export const clerkWebhooks = async (req, res) => {
     });
     const { data, type } = req.body;
 
-    if (type === "user.created") {
-      const userData = new User({
-        _id: data.id,
-        name: data.first_name + " " + data.last_name,
-        email: data.email_addresses[0].email_address,
-        imageUrl: data.imageUrl,
-      });
-      await userData.save();
-      res.json({});
-    } else if (type === "user.updated") {
-      const userData = {
-        name: data.first_name + " " + data.last_name,
-        email: data.email_addresses[0].email_address,
-        imageUrl: data.imageUrl,
-      };
-      await User.findByIdAndUpdate(data.id, userData);
-      res.json({});
-    } else if (type === "user.deleted") {
-      await User.findByIdAndDelete(data.id);
-      res.json({})
+    switch (type) {
+      case "user.created": {
+        const userData = {
+          _id: data.id,
+          name: data.first_name + " " + data.last_name,
+          email: data.email_addresses[0].email_address,
+          imageUrl: data.image_url,
+        };
+        await User.create(userData);
+        res.json({});
+        break;
+      }
+      case "user.updated": {
+        const userData = {
+          name: data.first_name + " " + data.last_name,
+          email: data.email_addresses[0].email_address,
+          imageUrl: data.image_url,
+        };
+        await User.findByIdAndUpdate(data.id, userData);
+        res.json({});
+        break;
+      }
+      case "user.deleted":
+        await User.findByIdAndDelete(data.id);
+        res.json({});
+        break;
     }
   } catch (error) {
     console.log(error);
-    res.json({success:false, message:"error"});
+    res.json({ success: false, message: "error" });
   }
 };
