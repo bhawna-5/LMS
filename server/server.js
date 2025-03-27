@@ -1,7 +1,6 @@
 import express from "express";
-// import cors from "cors";
+import cors from "cors";
 import "dotenv/config";
-// import connectDb from "./configs/mongodb.js";
 import { clerkWebhooks } from "./controllers/webhooks.js";
 import connectDb from "./configs/mongodb.js";
 
@@ -9,12 +8,12 @@ import connectDb from "./configs/mongodb.js";
 const app = express();
  
 //middlewares
-// app.use(cors());
+app.use(cors());
 //routes
 app.get("/", (req, res) => {
   res.send("Hello World");
 });
-// app.post("/clerk", express.json(), clerkWebhooks );
+app.post("/clerk", express.json(), clerkWebhooks );
 const PORT = process.env.PORT || 5000;
 
 connectDb()
