@@ -10,4 +10,4 @@ userRouter.post("/update-course-progress",updateUserCourseProgress)
 userRouter.post("/get-course-progress",getUserCourseProgress)
 userRouter.post("/add-rating",addUserRating)
 
-export default userRouter;
+export default userRouter; 

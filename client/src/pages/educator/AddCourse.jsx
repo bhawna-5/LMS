@@ -1,10 +1,14 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import uniqid from "uniqid";
 import Quill from "quill";
+import AppContext from "../../context/AppContext";
 import { assets } from "../../assets/assets";
+import { toast } from "react-toastify";
+import axios from "axios";
 const AddCourse = () => {
   const quillRef = useRef(null);
   const editorRef = useRef(null);
+  const { backendUrl, getToken } = useContext(AppContext);
 
   const [courseTitle, setCourseTitle] = useState("");
   const [coursePrice, setCoursePrice] = useState(0);
@@ -60,7 +64,45 @@ const AddCourse = () => {
     });
   };
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    try {
+      e.preventDefault();
+      if (!image) {
+        toast.error("Please upload a thumbnail image");
+      }
+      const courseData = {
+        courseTitle,
+        courseDescription: quillRef.current.root.innerHTML,
+        coursePrice: Number(coursePrice),
+        discount: Number(discount),
+        courseContent: chapters,
+      };
+      const formData = new FormData();
+      formData.append("courseData", JSON.stringify(courseData));
+      formData.append("image", image);
+      const token = await getToken();
+      const { data } = await axios.post(
+        backendUrl + "/api/educator/add-course",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (data.success) {
+        toast.success(data.message);
+        setCourseTitle("");
+        setCoursePrice(0);
+        setDiscount(0);
+        setImage(null);
+        setChapters([]);
+        quillRef.current.root.innerHTML = "";
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
   const handleChapter = (action, chapterId) => {
     if (action === "add") {
@@ -75,8 +117,8 @@ const AddCourse = () => {
             chapters.length > 0 ? chapters.slice(-1)[0].chapterOrder + 1 : 1,
         };
         setChapters([...chapters, newChapter]);
-      } 
-    }else if (action === "remove") {
+      }
+    } else if (action === "remove") {
       setChapters(
         chapters.filter((chapter) => chapter.chapterId !== chapterId)
       );
@@ -100,7 +142,7 @@ const AddCourse = () => {
   return (
     <div className="h-screen overflow-scroll flex flex-col items-start justify-between md:p-8 md:pb-0 p-4 pt-8 pb-0">
       <form
-        onSubmit={() => handleSubmit()}
+        onSubmit={handleSubmit}
         className="flex flex-col gap-4 max-w-md w-full text-gray-500"
       >
         <div className="flec flex-col gap-1">
@@ -185,17 +227,14 @@ const AddCourse = () => {
                     alt=""
                   />
                   <span className="font-semibold">
-                    {chapterIndex + 1}{" "}
-                    {chapter.chapterTitle}
+                    {chapterIndex + 1} {chapter.chapterTitle}
                   </span>
                 </div>
                 <span className="text-gray-500">
                   {chapter.chapterContent.length} Lectures
                 </span>
                 <img
-                  onClick={() =>
-                    handleChapter("remove", chapter.chapterId)
-                  }
+                  onClick={() => handleChapter("remove", chapter.chapterId)}
                   src={assets.cross_icon}
                   className="cursor-pointer"
                   alt=""
@@ -310,7 +349,8 @@ const AddCourse = () => {
                     className="mt-1 scale-125"
                   />
                 </div>
-                <button onClick={addLecture}
+                <button
+                  onClick={addLecture}
                   type="button"
                   className="w-full bg-blue-400 text-white px-4 py-2 rounded "
                 >

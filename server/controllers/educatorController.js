@@ -64,9 +64,11 @@ export const educatorDashboardData = async (req, res) => {
       courseId: { $in: courseIds },
       status: "completed",
     });
-    const totalEarning = purchases.reduce((sum, purchase) => {
-      return sum + purchase.amount;
-    }, 0);
+    const totalEarnings = purchases.reduce(
+      (sum, purchase) => sum + purchase.amount,
+      0
+    );
+
     //collect unique enrolled students IDs with their course title
 
     const enrolledStudentsData = [];
@@ -86,7 +88,7 @@ export const educatorDashboardData = async (req, res) => {
     }
     res.json({
       success: true,
-      dashboardData: { totalCourses, totalEarning, enrolledStudentsData },
+      dashboardData: { totalCourses, totalEarnings, enrolledStudentsData },
     });
   } catch (error) {
     res.json({ success: false, message: error.message });
@@ -104,11 +106,11 @@ export const getEnrolledStudentsData = async (req, res) => {
     })
       .populate("userId", "name imageUrl")
       .populate("courseId", "courseTitle");
-      const enrolledStudents=purchases.map((purchase)=>({
-        student:purchase.userId,
-        courseTitle:purchase.courseId.courseTitle,
-        purchaseDate:purchase.createdAt,
-      }))
+    const enrolledStudents = purchases.map((purchase) => ({
+      student: purchase.userId,
+      courseTitle: purchase.courseId.courseTitle,
+      purchaseDate: purchase.createdAt,
+    }));
     res.json({ success: true, enrolledStudents });
   } catch (error) {
     res.json({ success: false, message: error.message });
